@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase';
 import { styled } from 'styled-components';
-import logoImg from '../../assets/images/logo.png';
+import logoImg from '../../assets/images/logo_B.png';
 import { useEffect, useState, useRef } from 'react';
 
 const Nav = () => {

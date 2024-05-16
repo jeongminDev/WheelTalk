@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
 import { Error, Input, Switcher, Title, Wrapper, Form, Logo } from '../components/auth-components';
 import GoogleButton from '../components/GoogleBtn';
-import logoSrc from '../assets/images/logo.png';
+import logoSrc from '../assets/images/logo_B.png';
 
 const CreateAccount = () => {
   const navigate = useNavigate();
