@@ -18,6 +18,7 @@ export const Logo = styled.img`
   display: block;
   width: 50%;
   margin: 0 auto;
+  max-width: 105px;
 `;
 
 export const Form = styled.form`
@@ -53,12 +54,15 @@ export const Input = styled.input`
 
 export const Error = styled.span`
   font-weight: 600;
-  color: tomato;
+  color: red;
 `;
 
 export const Switcher = styled.span`
   margin-top: 20px;
   a {
-    color: #1d9bf0;
+    color: #999;
+    &:hover {
+      color: #000;
+    }
   }
 `;

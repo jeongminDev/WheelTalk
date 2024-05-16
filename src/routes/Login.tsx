@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { auth } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Error, Input, Switcher, Title, Wrapper, Form, Logo } from '../components/auth-components';
 import GoogleButton from '../components/GoogleBtn';
+import logoSrc from '../assets/images/logo.png';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,6 +13,19 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  // useEffect를 사용하여 컴포넌트가 마운트될 때 현재 로그인한 사용자가 있는지 확인합니다.
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // 사용자가 로그인한 상태면 홈 페이지로 리다이렉트합니다.
+        navigate('/');
+      }
+    });
+
+    // 구독을 취소하는 함수를 반환하여, 컴포넌트가 언마운트될 때 이벤트 리스너가 제거되도록 합니다.
+    return () => unsubscribe();
+  }, [navigate]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -58,7 +72,7 @@ const Login = () => {
         }}
         to={'/'}
       >
-        <Logo src="/logo.png" />
+        <Logo src={logoSrc} />
       </Link>
       <Title>LOGIN</Title>
       <Form onSubmit={onSubmit}>

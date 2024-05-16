@@ -1,32 +1,33 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import Layout from './components/Layout';
+import Nav from './components/layouts/Nav';
 import Home from './routes/Home';
-import Profile from './routes/Profile';
 import Login from './routes/Login';
 import CreateAccount from './routes/CreateAccount';
 import List from './components/List';
 import styled, { createGlobalStyle } from 'styled-components';
 import reset from 'styled-reset';
 import { useEffect, useState } from 'react';
-import LoadingScreen from './components/LoadingScreen';
+import LoadingScreen from './components/layouts/LoadingScreen';
 import { auth } from './firebase';
+import Footer from './components/layouts/Footer';
+import FreeNotice from './components/views/FreeNotice';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: <Nav />,
     children: [
       {
         path: '',
         element: <Home />,
       },
       {
-        path: 'profile',
-        element: <Profile />,
-      },
-      {
         path: 'list',
         element: <List />,
+      },
+      {
+        path: '/:free',
+        element: <FreeNotice />,
       },
     ],
   },
@@ -45,6 +46,11 @@ function App() {
   const init = async () => {
     // wait for firebase
     await auth.authStateReady();
+
+    // setTimeout(() => {
+    //   setLoading(false);
+    // }, 5000);
+
     setLoading(false);
   };
 
@@ -56,6 +62,7 @@ function App() {
     <Wrapper>
       <GlobalStyles />
       {isLoading ? <LoadingScreen /> : <RouterProvider router={router} />}
+      <Footer githubUrl="https://github.com/jeongminDev/WheelTalk" />
     </Wrapper>
   );
 }
@@ -68,14 +75,17 @@ const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
   body{
-    background-color: white;
-    color: black;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  a{
+    text-decoration: none;
   }
 `;
 
 const Wrapper = styled.div`
-  height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - 90px);
+  position: relative;
 `;
