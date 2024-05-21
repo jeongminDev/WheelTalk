@@ -6,7 +6,7 @@ interface FooterProps {
 
 const Footer = ({ githubUrl }: FooterProps) => {
   return (
-    <FooterWrapper className="footer">
+    <FooterWrapper className="footer bg-base-300">
       <FooterMenu>
         <MenuLink href={githubUrl} target="_blank" rel="noreferrer noopener external">
           <svg
@@ -35,7 +35,6 @@ const FooterWrapper = styled.footer`
   justify-content: center;
   align-items: center;
   padding: 20px;
-  background-color: #f5f5f5;
   width: 100%;
   position: absolute;
   top: 100%;
@@ -49,9 +48,6 @@ const FooterMenu = styled.div`
 
 const MenuLink = styled.a`
   margin-right: 10px;
-  color: #333;
 `;
 
-const CopyRight = styled.p`
-  color: #999;
-`;
+const CopyRight = styled.p``;

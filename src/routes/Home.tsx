@@ -3,6 +3,7 @@ import Slider from '../components/Slider';
 import SearchBar from '../components/SearchBar';
 import PopularCharts from '../components/PopularCharts';
 import ArticleList from '../components/ArticleList';
+import { Category } from '../components/constants/category';
 
 const Home = () => {
   return (
@@ -17,11 +18,9 @@ const Home = () => {
           <PopularCharts />
         </MainSection>
         <SubSection>
-          <ArticleList title={'BENZ'} limit={5} />
-          <ArticleList title={'BMW'} limit={5} />
-          <ArticleList title={'CHEVROLET'} limit={5} />
-          <ArticleList title={'HYUNDAI'} limit={5} />
-          <ArticleList title={'KIA'} limit={5} />
+          {Object.entries(Category).map(([key, name]) => (
+            <ArticleList key={key} title={name} limit={5} />
+          ))}
         </SubSection>
       </SectionWrapper>
     </Wrapper>

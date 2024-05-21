@@ -1,6 +1,7 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import Article from './Article';
+import { Category } from './constants/category';
 
 interface ArticleListProps {
   title: string;
@@ -8,20 +9,18 @@ interface ArticleListProps {
 }
 
 const ArticleList = ({ title, limit }: ArticleListProps) => {
-  // const param = useParams();
-  // const paramKey = Object.keys(param).join('');
+  // Category 객체에서 title과 일치하는 값을 가진 키 찾기
+  const cateEntry = Object.entries(Category).find(([key, name]) => name === title);
+
+  // 찾은 키가 없을 경우 대비하여 기본값 설정
+  const cateLink = cateEntry ? cateEntry[0] : '';
 
   return (
     <Wrapper>
       <TitleSection>
         <h2>{title}</h2>
-        {/* {paramKey ? null : (
-          <Link to={'/list'}>
-            <MoreBtn>더보기 &gt;</MoreBtn>
-          </Link>
-        )} */}
-        <Link to={'/list'}>
-          <MoreBtn>더보기 &gt;</MoreBtn>
+        <Link to={`/category/${cateLink}`}>
+          {title === 'NEW' ? null : <MoreBtn>더보기 &gt;</MoreBtn>}
         </Link>
       </TitleSection>
       <ListWrapper className="article">

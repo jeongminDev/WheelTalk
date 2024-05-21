@@ -2,13 +2,19 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase';
 import { styled } from 'styled-components';
 import logoImg from '../../assets/images/logo_B.png';
+import logoWhiteImg from '../../assets/images/logo_W.png';
 import { useEffect, useState, useRef } from 'react';
+import WriteModal from '../WriteModal';
+import { Category } from '../constants/category';
 
 const Nav = () => {
   const user = auth.currentUser;
   // console.log(user);
-
   const navigate = useNavigate();
+  const [writeModalOpen, setWriteModalOpen] = useState(false);
+  const [theme, setTheme] = useState<string>('light');
+  const htmlEl = document.querySelector('html');
+
   const onLogOut = async () => {
     const ok = confirm('정말 로그아웃 하겠습니까?');
 
@@ -16,6 +22,14 @@ const Nav = () => {
       await auth.signOut();
       navigate('/');
     }
+  };
+
+  const onWrite = () => {
+    setWriteModalOpen(true); // 모달을 열기
+  };
+
+  const onCloseModal = () => {
+    setWriteModalOpen(false); // 모달을 닫기
   };
 
   // 광고 문구들
@@ -43,9 +57,29 @@ const Nav = () => {
     }
   }, [currentAdIndex]);
 
+  useEffect(() => {
+    const currentTheme = localStorage.getItem('theme') || 'light';
+
+    setTheme(currentTheme);
+    htmlEl?.setAttribute('data-theme', currentTheme);
+    if (currentTheme === 'dark') {
+      document.querySelector('input.theme-controller')?.setAttribute('checked', 'checked');
+    }
+  }, [htmlEl]);
+
+  const clickThemeChange = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+
+    setTheme(newTheme);
+
+    htmlEl?.setAttribute('data-theme', newTheme);
+
+    localStorage.setItem('theme', newTheme);
+  };
+
   return (
     <>
-      <SubBanner>
+      <SubBanner className="bg-base-300">
         <BannerList ref={adsRef}>
           {ads.map((ad, index) => (
             <BannerItem key={index}>{ad}</BannerItem>
@@ -59,21 +93,32 @@ const Nav = () => {
             maxWidth: '110px',
           }}
         >
-          <Logo src={logoImg}></Logo>
+          {theme === 'light' ? <Logo src={logoImg}></Logo> : <Logo src={logoWhiteImg}></Logo>}
         </Link>
 
         <MainMenu>
           <Link to={'/'}>
             <MainMenuItem className="font-bold">HOME</MainMenuItem>
           </Link>
-          {/* TODO category별 차량 게시판 category.ts 참조 */}
           <Link to={'/free'}>
             <MainMenuItem>자유게시판</MainMenuItem>
           </Link>
+
+          {/* TODO category별 차량 게시판 category.ts 참조 */}
+          <DropdownMenu className="dropdown" theme={theme}>
+            <button className="drop_btn">브랜드 별 게시판</button>
+            <ul className="dropdown_content">
+              {Object.entries(Category).map(([key, name]) => (
+                <li key={key}>
+                  <Link to={`/category/${key}`}>{name}</Link>
+                </li>
+              ))}
+            </ul>
+          </DropdownMenu>
         </MainMenu>
 
         <UtilMenu>
-          <label className="flex cursor-pointer gap-2">
+          <label className="flex cursor-pointer gap-2" onClick={clickThemeChange}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -88,7 +133,7 @@ const Nav = () => {
               <circle cx="12" cy="12" r="5" />
               <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
             </svg>
-            <input type="checkbox" value="retro" className="toggle theme-controller" />
+            <input type="checkbox" value="dark" className="toggle theme-controller" />
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -114,7 +159,14 @@ const Nav = () => {
             </>
           ) : (
             <>
-              <UtilItem>글쓰기</UtilItem>
+              <UtilItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  onWrite();
+                }}
+              >
+                글쓰기
+              </UtilItem>
               <UtilItem onClick={onLogOut} className="log-out">
                 로그아웃
               </UtilItem>
@@ -122,6 +174,7 @@ const Nav = () => {
           )}
         </UtilMenu>
       </Wrapper>
+      {writeModalOpen && <WriteModal onClose={onCloseModal} />}
       <Outlet />
     </>
   );
@@ -149,6 +202,65 @@ const MainMenuItem = styled.div`
   cursor: pointer;
   width: auto;
   font-size: 14px;
+  &:hover {
+    font-weight: bold;
+  }
+`;
+
+const DropdownMenu = styled.div<{ theme: string }>`
+  position: relative;
+
+  &:hover {
+    ul {
+      height: auto;
+      box-shadow: ${({ theme }) =>
+        theme === 'light'
+          ? '0px 3px 4px 3px rgba(204, 204, 204, 0.5)'
+          : '0px 3px 4px 3px rgba(33, 33, 33, 0.7);'};
+    }
+  }
+
+  button {
+    padding: 5px;
+    cursor: pointer;
+    width: auto;
+    font-size: 14px;
+    &:hover {
+      font-weight: bold;
+    }
+  }
+
+  ul {
+    position: absolute;
+    width: 100%;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    height: 0%;
+    overflow: hidden;
+
+    background: ${({ theme }) => (theme === 'light' ? '#fff' : '#1d232a')};
+    border-radius: 4px;
+
+    li {
+      padding: 5px;
+      font-size: 14px;
+      font-weight: 500;
+
+      &:hover {
+        color: #000;
+        background: #ddd;
+      }
+
+      a {
+        display: block;
+      }
+    }
+  }
 `;
 
 const UtilMenu = styled.div`
@@ -176,7 +288,6 @@ const SubBanner = styled.div`
   height: 35px;
   overflow: hidden;
   width: 100%;
-  background-color: #ddd;
 `;
 
 const BannerList = styled.ul`

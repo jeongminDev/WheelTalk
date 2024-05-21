@@ -1,19 +1,19 @@
 import styled from 'styled-components';
 import DetailNoticeList from '../DetailNoticeList';
 import Pagination from '../layouts/Pagination';
-// import { useParams } from 'react-router-dom';
+import { useState } from 'react';
 
 const FreeNotice = () => {
-  // const param = useParams();
-  // console.log(param);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 30; // 예시로 10을 설정
 
   return (
     <Wrapper>
       <div className="overflow-x-auto">
-        <DetailNoticeList title={''} />
+        <DetailNoticeList title={''} currentPage={currentPage} itemsPerPage={itemsPerPage} />
       </div>
 
-      <Pagination />
+      <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
     </Wrapper>
   );
 };
@@ -26,5 +26,5 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 40px;
-  margin: 30px 0 50px;
+  margin: 100px 0 50px;
 `;

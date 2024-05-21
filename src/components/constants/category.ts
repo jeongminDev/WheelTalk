@@ -1,3 +1,4 @@
+/*
 // 차량 유형을 별도로 정의
 const VehicleTypes = {
   sedan: { name: '세단', description: '...' },
@@ -29,4 +30,25 @@ export const Category: {
     suv: VehicleTypes.suv,
   },
   // 나머지 브랜드도 동일하게
+} as const;
+*/
+
+export const Category: { [key: string]: string } = {
+  hyundai: 'HYUNDAI', // 현대
+  kia: 'KIA', // 기아
+  genesis: 'GENESIS', // 제네시스
+  kgmobility: 'KG 모빌리티', // 구 쌍용
+  renault: '르노코리아', // 구 르노삼성
+  benz: 'Benz',
+  audi: 'Audi', // 아우디
+  bmw: 'BMW',
+  volkswagen: 'Volkswagen', // 폭스바겐
+  chevrolet: 'Chevrolet',
+  ford: 'Ford', // 포드
+  tesla: 'Tesla', // 테슬라
+  toyota: 'Toyota', // 토요타
+  honda: 'Honda', // 혼다
+  nissan: 'Nissan', // 닛산
+  lexus: 'Lexus', // 렉서스
+  etc: 'All', // etc...
 } as const;

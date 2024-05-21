@@ -11,6 +11,7 @@ import LoadingScreen from './components/layouts/LoadingScreen';
 import { auth } from './firebase';
 import Footer from './components/layouts/Footer';
 import FreeNotice from './components/views/FreeNotice';
+import CategoryNotice from './components/views/CategoryNotice';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: '/:free',
         element: <FreeNotice />,
+      },
+      {
+        path: '/category/:cate',
+        element: <CategoryNotice />,
       },
     ],
   },

@@ -4,22 +4,20 @@ import { Category } from './constants/category';
 
 interface DetailNoticeListProps {
   title: string;
+  currentPage: number;
+  itemsPerPage: number;
 }
 
-const DetailNoticeList = (title: DetailNoticeListProps) => {
-  // console.log(Category.benz.car.name);
-  const keys = Object.keys(Category);
-  const titleValue = Object.values(title).join('');
-
-  const filteredKey = keys.filter((key: string) => key === titleValue).join('');
+const DetailNoticeList = ({ title, currentPage, itemsPerPage }: DetailNoticeListProps) => {
+  const matchedCategory = Category[title];
 
   return (
     <Wrapper>
       <TitleSection>
-        <h2>{titleValue ? titleValue.toUpperCase() : '자유게시판'}</h2>
+        <h2>{matchedCategory ? matchedCategory : '자유게시판'}</h2>
       </TitleSection>
       <ListWrapper className="article">
-        <Article limit={10} />
+        <Article limit={100} currentPage={currentPage} itemsPerPage={itemsPerPage} />
       </ListWrapper>
     </Wrapper>
   );
@@ -37,6 +35,7 @@ const ListWrapper = styled.div`
   border: solid 1px #ddd;
   border-radius: 5px;
   display: flex;
+  padding: 20px 10px;
 `;
 
 const TitleSection = styled.div`
