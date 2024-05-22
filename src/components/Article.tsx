@@ -1,48 +1,33 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { INotice } from './ArticleList';
+import formatDate from './helpers/helpers';
 
 interface ArticleProps {
-  limit: number;
-  currentPage: number;
-  itemsPerPage: number;
+  index: number;
 }
 
-const Article = ({ limit, currentPage, itemsPerPage }: ArticleProps) => {
-  // username : user.displayName || 'Anonymous',
-  // createdAt : Date.now(),
-  // userId : user.uid
-  // TODO firebase addDoc (Tweet.tsx 참고)
-  const lists = Array.from({ length: limit }, (_, index) => ({
-    name: `${index}`,
-    createdAt: 1715748285564 + index,
-    userId: `${index}`,
-    title: '리스트 제목 ' + `${index}`,
-  }));
-
-  // 현재 페이지에 해당하는 데이터만 필터링
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const selectedLists = lists.slice(startIndex, startIndex + itemsPerPage);
-
-  interface IListItem {
-    readonly name: string;
-    readonly createdAt: number;
-    readonly userId: string;
-    readonly title: string;
-  }
-
+const Article = ({
+  id,
+  photo,
+  content,
+  username,
+  userId,
+  createdAt,
+  title,
+  category,
+  brand,
+  index,
+}: ArticleProps & INotice) => {
   return (
     <ArticleWrap>
-      {selectedLists.map((list: IListItem, index: number) => {
-        return (
-          <Link to={`/notice/${list.createdAt}/${list.title}`} key={index}>
-            <ArticleList className="flex">
-              <strong>{startIndex + index + 1}</strong>
-              <p>{list.title}</p>
-              <span>{list.createdAt}</span>
-            </ArticleList>
-          </Link>
-        );
-      })}
+      <Link to={`/notice/${createdAt}/${title}`}>
+        <ArticleList className="flex">
+          <strong>{index}</strong>
+          <p>{title}</p>
+          <span>{formatDate(createdAt)}</span>
+        </ArticleList>
+      </Link>
     </ArticleWrap>
   );
 };
@@ -54,15 +39,13 @@ const ArticleWrap = styled.div`
   flex-direction: column;
   width: 100%;
   justify-content: space-evenly;
-  gap: 20px;
 `;
 
 const ArticleList = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  align-items: stretch;
-  gap: 30px;
+  gap: 10px;
   padding: 0 20px;
 
   strong {
@@ -70,5 +53,10 @@ const ArticleList = styled.div`
   }
   p {
     flex: 1;
+  }
+
+  span {
+    color: #666;
+    font-size: 14px;
   }
 `;

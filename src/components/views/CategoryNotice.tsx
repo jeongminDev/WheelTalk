@@ -2,14 +2,17 @@ import styled from 'styled-components';
 import DetailNoticeList from '../DetailNoticeList';
 import Pagination from '../layouts/Pagination';
 import { useParams } from 'react-router-dom';
+import { useState } from 'react';
 
 const CategoryNotice = () => {
   const { cate } = useParams<{ cate: string }>();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 30; // 예시로 설정
 
   return (
     <Wrapper>
       <div className="overflow-x-auto">{cate && <DetailNoticeList title={cate} />}</div>
-      <Pagination />
+      <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
     </Wrapper>
   );
 };

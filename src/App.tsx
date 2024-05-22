@@ -12,6 +12,7 @@ import { auth } from './firebase';
 import Footer from './components/layouts/Footer';
 import FreeNotice from './components/views/FreeNotice';
 import CategoryNotice from './components/views/CategoryNotice';
+import Notice from './components/views/Notice';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: '/category/:cate',
         element: <CategoryNotice />,
+      },
+      {
+        path: '/notice/:createdAt/:title',
+        element: <Notice />,
       },
     ],
   },

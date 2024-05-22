@@ -1,15 +1,50 @@
 import { styled } from 'styled-components';
 import Article from './Article';
 import { Category } from './constants/category';
+import { useEffect, useState } from 'react';
+import { Unsubscribe, collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { db } from '../firebase';
+import { INotice } from './ArticleList';
 
 interface DetailNoticeListProps {
   title: string;
-  currentPage: number;
-  itemsPerPage: number;
 }
 
-const DetailNoticeList = ({ title, currentPage, itemsPerPage }: DetailNoticeListProps) => {
+const DetailNoticeList = ({ title }: DetailNoticeListProps) => {
   const matchedCategory = Category[title];
+
+  const [notices, setNotice] = useState<INotice[]>([]);
+
+  useEffect(() => {
+    let unsubscribe: Unsubscribe | null = null;
+
+    const fetchTweets = async () => {
+      const noticesQuery = query(collection(db, 'notice'), orderBy('createdAt', 'desc'));
+
+      unsubscribe = await onSnapshot(noticesQuery, (snapshot) => {
+        const notices = snapshot.docs.map((doc) => {
+          const { content, createdAt, userId, username, photo, category, brand, title } =
+            doc.data();
+          return {
+            content,
+            createdAt,
+            userId,
+            username,
+            photo,
+            id: doc.id,
+            title,
+            category,
+            brand,
+          };
+        });
+        setNotice(notices);
+      });
+    };
+    fetchTweets();
+    return () => {
+      unsubscribe && unsubscribe();
+    };
+  }, []);
 
   return (
     <Wrapper>
@@ -17,7 +52,9 @@ const DetailNoticeList = ({ title, currentPage, itemsPerPage }: DetailNoticeList
         <h2>{matchedCategory ? matchedCategory : '자유게시판'}</h2>
       </TitleSection>
       <ListWrapper className="article">
-        <Article limit={100} currentPage={currentPage} itemsPerPage={itemsPerPage} />
+        {notices.map((notice, index) => (
+          <Article key={notice.id} {...notice} index={index + 1} currentPage={0} itemsPerPage={0} />
+        ))}
       </ListWrapper>
     </Wrapper>
   );
@@ -35,6 +72,9 @@ const ListWrapper = styled.div`
   border: solid 1px #ddd;
   border-radius: 5px;
   display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 20px;
   padding: 20px 10px;
 `;
 

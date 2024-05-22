@@ -5,12 +5,12 @@ import { useState } from 'react';
 
 const FreeNotice = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30; // 예시로 10을 설정
+  const itemsPerPage = 30; // 예시로 설정
 
   return (
     <Wrapper>
       <div className="overflow-x-auto">
-        <DetailNoticeList title={''} currentPage={currentPage} itemsPerPage={itemsPerPage} />
+        <DetailNoticeList title={''} />
       </div>
 
       <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} />

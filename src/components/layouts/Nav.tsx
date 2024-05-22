@@ -29,7 +29,7 @@ const Nav = () => {
   };
 
   const onCloseModal = () => {
-    setWriteModalOpen(false); // 모달을 닫기
+    setWriteModalOpen(false);
   };
 
   // 광고 문구들
@@ -174,7 +174,7 @@ const Nav = () => {
           )}
         </UtilMenu>
       </Wrapper>
-      {writeModalOpen && <WriteModal onClose={onCloseModal} />}
+      {writeModalOpen && <WriteModal onClose={onCloseModal} theme={theme} />}
       <Outlet />
     </>
   );
