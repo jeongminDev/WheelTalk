@@ -36,7 +36,7 @@ const router = createBrowserRouter([
         element: <CategoryNotice />,
       },
       {
-        path: '/notice/:createdAt/:title',
+        path: '/notice/:id',
         element: <Notice />,
       },
     ],

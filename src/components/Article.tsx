@@ -21,7 +21,7 @@ const Article = ({
 }: ArticleProps & INotice) => {
   return (
     <ArticleWrap>
-      <Link to={`/notice/${createdAt}/${title}`}>
+      <Link to={`/notice/${id}`}>
         <ArticleList className="flex">
           <strong>{index}</strong>
           <p>{title}</p>

@@ -92,7 +92,7 @@ const Login = () => {
           type="password"
           required
         />
-        <Input type="submit" value={isLoading ? 'Loading...' : 'Login'} />
+        <Input type="submit" value={isLoading ? '로그인 중...' : 'Login'} />
       </Form>
       {error !== '' ? <Error>{error}</Error> : null}
       <Switcher>

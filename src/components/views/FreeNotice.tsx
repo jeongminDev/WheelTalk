@@ -1,19 +1,35 @@
 import styled from 'styled-components';
 import DetailNoticeList from '../DetailNoticeList';
 import Pagination from '../layouts/Pagination';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase';
 
 const FreeNotice = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30; // 예시로 설정
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 3;
+
+  useEffect(() => {
+    const fetchTotalItems = async () => {
+      const snapshot = await getDocs(collection(db, 'notice'));
+      setTotalItems(snapshot.size);
+    };
+
+    fetchTotalItems();
+  }, []);
 
   return (
     <Wrapper>
       <div className="overflow-x-auto">
-        <DetailNoticeList title={''} />
+        <DetailNoticeList title={''} itemsPerPage={itemsPerPage} currentPage={currentPage} />
       </div>
-
-      <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <Pagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+      />
     </Wrapper>
   );
 };

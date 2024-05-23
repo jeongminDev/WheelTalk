@@ -1,10 +1,12 @@
 interface PaginationProps {
   currentPage: number;
   setCurrentPage: (pageNumber: number) => void;
+  totalItems: number; // 총 아이템 수
+  itemsPerPage: number; // 페이지당 아이템 수
 }
 
-const Pagination = ({ currentPage, setCurrentPage }: PaginationProps) => {
-  const totalPages = 3; // 총 페이지 수, 실제로는 서버로부터 받거나 계산해야 함
+const Pagination = ({ currentPage, setCurrentPage, totalItems, itemsPerPage }: PaginationProps) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage); // 총 페이지 수 계산
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);

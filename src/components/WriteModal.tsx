@@ -31,6 +31,10 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
   };
 
   const handleBrandChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    if (category === 'free') {
+      setBrand('');
+      return;
+    }
     setBrand(event.target.value);
   };
 
@@ -117,7 +121,9 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
               </Select>
               {category === 'category' ? (
                 <Select value={brand} onChange={handleBrandChange}>
-                  <option value={'All'}>--선택해주세요--</option>
+                  <option value={'All'} disabled>
+                    --선택해주세요--
+                  </option>
                   {Object.entries(Category).map(([key, name]) => (
                     <option key={key} value={name}>
                       {name}
@@ -218,6 +224,10 @@ const ModalBox = styled.div`
 
   .file {
     cursor: pointer;
+
+    &:hover svg {
+      background: #ddd;
+    }
   }
 `;
 

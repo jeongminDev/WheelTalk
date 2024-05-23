@@ -13,7 +13,7 @@ interface ArticleListProps {
 
 export interface INotice {
   id: string;
-  photo: string;
+  photo?: string;
   content: string;
   username: string;
   userId: string;
@@ -29,7 +29,7 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
   useEffect(() => {
     let unsubscribe: Unsubscribe | null = null;
 
-    const fetchTweets = async () => {
+    const fetchNotices = async () => {
       const noticesQuery = query(
         collection(db, 'notice'),
         orderBy('createdAt', 'desc'),
@@ -55,7 +55,7 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
         setNotice(notices);
       });
     };
-    fetchTweets();
+    fetchNotices();
     return () => {
       unsubscribe && unsubscribe();
     };
@@ -65,8 +65,6 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
   const cateEntry = Object.entries(Category).find(([key, name]) => name === cateTitle);
 
   const filteredNotice = notices.filter((notice) => notice.brand === cateTitle);
-
-  // console.log(filteredNotice);
 
   // 찾은 키가 없을 경우 대비하여 기본값 설정
   const cateLink = cateEntry ? cateEntry[0] : '';
@@ -80,13 +78,21 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
         </Link>
       </TitleSection>
       <ListWrapper>
-        {cateTitle === 'NEW'
-          ? notices.map((notice, index) => (
+        {cateTitle === 'NEW' ? (
+          notices.length > 0 ? (
+            notices.map((notice, index) => (
               <Article key={notice.id} {...notice} index={index + 1} />
             ))
-          : filteredNotice.map((notice, index) => (
-              <Article key={notice.id} {...notice} index={index + 1} />
-            ))}
+          ) : (
+            <div className="p-5">이야기를 기다리는 중...</div>
+          )
+        ) : filteredNotice.length > 0 ? (
+          filteredNotice.map((notice, index) => (
+            <Article key={notice.id} {...notice} index={index + 1} />
+          ))
+        ) : (
+          <div className="p-5">이야기를 기다리는 중...</div>
+        )}
       </ListWrapper>
     </Wrapper>
   );
@@ -100,14 +106,13 @@ const Wrapper = styled.div`
 `;
 
 const ListWrapper = styled.div`
-  min-height: 300px;
   border: solid 1px #ddd;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  gap: 20px;
-  padding: 20px 0;
+  padding: 15px 0;
+  gap: 12px;
 `;
 
 const TitleSection = styled.div`

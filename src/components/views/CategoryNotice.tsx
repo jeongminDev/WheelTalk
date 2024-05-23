@@ -2,17 +2,38 @@ import styled from 'styled-components';
 import DetailNoticeList from '../DetailNoticeList';
 import Pagination from '../layouts/Pagination';
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase';
 
 const CategoryNotice = () => {
   const { cate } = useParams<{ cate: string }>();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30; // 예시로 설정
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 3;
+
+  useEffect(() => {
+    const fetchTotalItems = async () => {
+      const snapshot = await getDocs(collection(db, 'notice'));
+      setTotalItems(snapshot.size);
+    };
+
+    fetchTotalItems();
+  }, []);
 
   return (
     <Wrapper>
-      <div className="overflow-x-auto">{cate && <DetailNoticeList title={cate} />}</div>
-      <Pagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <div className="overflow-x-auto">
+        {cate && (
+          <DetailNoticeList title={cate} itemsPerPage={itemsPerPage} currentPage={currentPage} />
+        )}
+      </div>
+      <Pagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+      />
     </Wrapper>
   );
 };

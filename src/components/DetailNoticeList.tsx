@@ -1,28 +1,53 @@
 import { styled } from 'styled-components';
 import Article from './Article';
 import { Category } from './constants/category';
-import { useEffect, useState } from 'react';
-import { Unsubscribe, collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Unsubscribe,
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  startAfter,
+  getDocs,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import { INotice } from './ArticleList';
 
 interface DetailNoticeListProps {
   title: string;
+  itemsPerPage: number;
+  currentPage: number; // 현재 페이지
 }
 
-const DetailNoticeList = ({ title }: DetailNoticeListProps) => {
+const DetailNoticeList = ({ title, itemsPerPage, currentPage }: DetailNoticeListProps) => {
   const matchedCategory = Category[title];
-
   const [notices, setNotice] = useState<INotice[]>([]);
+  const [lastVisible, setLastVisible] = useState<any>(null);
+  const lastVisibleRef = useRef<any>(null);
 
   useEffect(() => {
     let unsubscribe: Unsubscribe | null = null;
 
-    const fetchTweets = async () => {
-      const noticesQuery = query(collection(db, 'notice'), orderBy('createdAt', 'desc'));
+    const fetchNotices = async () => {
+      let noticesQuery = query(
+        collection(db, 'notice'),
+        orderBy('createdAt', 'desc'),
+        limit(itemsPerPage)
+      );
 
-      unsubscribe = await onSnapshot(noticesQuery, (snapshot) => {
-        const notices = snapshot.docs.map((doc) => {
+      if (currentPage > 1 && lastVisibleRef.current) {
+        noticesQuery = query(
+          collection(db, 'notice'),
+          orderBy('createdAt', 'desc'),
+          startAfter(lastVisibleRef.current),
+          limit(itemsPerPage)
+        );
+      }
+
+      unsubscribe = onSnapshot(noticesQuery, (snapshot) => {
+        const newNotices = snapshot.docs.map((doc) => {
           const { content, createdAt, userId, username, photo, category, brand, title } =
             doc.data();
           return {
@@ -37,14 +62,22 @@ const DetailNoticeList = ({ title }: DetailNoticeListProps) => {
             brand,
           };
         });
-        setNotice(notices);
+
+        setNotice(newNotices);
+        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+        lastVisibleRef.current = snapshot.docs[snapshot.docs.length - 1];
       });
     };
-    fetchTweets();
+
+    fetchNotices();
+
     return () => {
       unsubscribe && unsubscribe();
     };
-  }, []);
+  }, [itemsPerPage, currentPage]);
+
+  const filteredCateNotice = notices.filter((notice) => notice.brand === matchedCategory);
+  const filteredFreeNotice = notices.filter((notice) => notice.category === 'free');
 
   return (
     <Wrapper>
@@ -52,9 +85,13 @@ const DetailNoticeList = ({ title }: DetailNoticeListProps) => {
         <h2>{matchedCategory ? matchedCategory : '자유게시판'}</h2>
       </TitleSection>
       <ListWrapper className="article">
-        {notices.map((notice, index) => (
-          <Article key={notice.id} {...notice} index={index + 1} currentPage={0} itemsPerPage={0} />
-        ))}
+        {matchedCategory
+          ? filteredCateNotice.map((notice, index) => (
+              <Article key={notice.id} {...notice} index={index + 1} />
+            ))
+          : filteredFreeNotice.map((notice, index) => (
+              <Article key={notice.id} {...notice} index={index + 1} />
+            ))}
       </ListWrapper>
     </Wrapper>
   );
@@ -68,7 +105,6 @@ const Wrapper = styled.div`
 `;
 
 const ListWrapper = styled.div`
-  min-height: 300px;
   border: solid 1px #ddd;
   border-radius: 5px;
   display: flex;

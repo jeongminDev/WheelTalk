@@ -78,7 +78,7 @@ const CreateAccount = () => {
           onChange={onChange}
           name="name"
           value={name}
-          placeholder="이름을 입력해주세요."
+          placeholder="닉네임을 입력해주세요."
           type="text"
           required
         />
