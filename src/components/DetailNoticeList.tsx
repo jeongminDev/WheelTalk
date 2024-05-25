@@ -1,7 +1,7 @@
 import { styled } from 'styled-components';
 import Article from './Article';
 import { Category } from './constants/category';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Unsubscribe,
   collection,
@@ -10,7 +10,8 @@ import {
   orderBy,
   query,
   startAfter,
-  getDocs,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { INotice } from './ArticleList';
@@ -19,16 +20,26 @@ interface DetailNoticeListProps {
   title: string;
   itemsPerPage: number;
   currentPage: number; // 현재 페이지
+  updatePageDocs: (pageNumber: number, doc: QueryDocumentSnapshot<DocumentData>) => void; // 기준점 업데이트 함수
+  pageDocs: QueryDocumentSnapshot<DocumentData>[]; // 각 페이지의 기준점 문서 배열
 }
 
-const DetailNoticeList = ({ title, itemsPerPage, currentPage }: DetailNoticeListProps) => {
+const DetailNoticeList = ({
+  title,
+  itemsPerPage,
+  currentPage,
+  updatePageDocs,
+  pageDocs,
+}: DetailNoticeListProps) => {
   const matchedCategory = Category[title];
   const [notices, setNotice] = useState<INotice[]>([]);
-  const [lastVisible, setLastVisible] = useState<any>(null);
-  const lastVisibleRef = useRef<any>(null);
+  const [hasMore, setHasMore] = useState(true); // 추가: 문서가 더 있는지 여부를 추적
 
   useEffect(() => {
     let unsubscribe: Unsubscribe | null = null;
+
+    // 추가: 문서가 더 이상 없거나, 첫 페이지를 로딩하는 경우가 아니면 작업을 실행하지 않음
+    if (!hasMore && currentPage !== 1) return;
 
     const fetchNotices = async () => {
       let noticesQuery = query(
@@ -37,25 +48,25 @@ const DetailNoticeList = ({ title, itemsPerPage, currentPage }: DetailNoticeList
         limit(itemsPerPage)
       );
 
-      if (currentPage > 1 && lastVisibleRef.current) {
+      if (currentPage > 1 && pageDocs[currentPage - 2]) {
         noticesQuery = query(
           collection(db, 'notice'),
           orderBy('createdAt', 'desc'),
-          startAfter(lastVisibleRef.current),
+          startAfter(pageDocs[currentPage - 2]),
           limit(itemsPerPage)
         );
       }
 
       unsubscribe = onSnapshot(noticesQuery, (snapshot) => {
         const newNotices = snapshot.docs.map((doc) => {
-          const { content, createdAt, userId, username, photo, category, brand, title } =
+          const { content, createdAt, userId, username, photos, category, brand, title } =
             doc.data();
           return {
             content,
             createdAt,
             userId,
             username,
-            photo,
+            photos,
             id: doc.id,
             title,
             category,
@@ -64,8 +75,12 @@ const DetailNoticeList = ({ title, itemsPerPage, currentPage }: DetailNoticeList
         });
 
         setNotice(newNotices);
-        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-        lastVisibleRef.current = snapshot.docs[snapshot.docs.length - 1];
+        if (snapshot.docs.length > 0) {
+          updatePageDocs(currentPage, snapshot.docs[snapshot.docs.length - 1]);
+        }
+
+        // 추가: 문서가 더 있는지 여부를 확인
+        setHasMore(snapshot.docs.length === itemsPerPage);
       });
     };
 
@@ -74,7 +89,8 @@ const DetailNoticeList = ({ title, itemsPerPage, currentPage }: DetailNoticeList
     return () => {
       unsubscribe && unsubscribe();
     };
-  }, [itemsPerPage, currentPage]);
+    // 의존성 배열에서 pageDocs를 제거하고, hasMore 조건을 사용하여 재실행을 제어합니다.
+  }, [itemsPerPage, currentPage, updatePageDocs, hasMore]);
 
   const filteredCateNotice = notices.filter((notice) => notice.brand === matchedCategory);
   const filteredFreeNotice = notices.filter((notice) => notice.category === 'free');

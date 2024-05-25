@@ -50,6 +50,7 @@ const Notice = () => {
           content: data.content,
           category: data.category,
           brand: data.brand,
+          photos: data.photos || [],
         });
       } else {
         console.log('No such document!');
@@ -139,7 +140,13 @@ const Notice = () => {
           </p>
         </ArticleTitleMeta>
 
-        {article.photo && <ArticleImage src={article.photo} alt="게시글 이미지" />}
+        {article.photos.length > 0 && (
+          <ImageGallery>
+            {article.photos.map((src, index) => (
+              <ArticleImage key={index} src={src} alt={`게시글 이미지 ${index + 1}`} />
+            ))}
+          </ImageGallery>
+        )}
         <ArticleContent>{article.content}</ArticleContent>
         <CommentForm onSubmit={handleCommentSubmit}>
           <input
@@ -229,12 +236,16 @@ const ArticleTitleMeta = styled.div`
   }
 `;
 
+const ImageGallery = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  gap: 20px;
+`;
+
 const ArticleImage = styled.img`
   display: block;
-  max-width: 90%;
-  margin: 0 auto;
-  height: auto;
-  margin-top: 30px;
+  max-width: 40%;
 `;
 
 const ArticleContent = styled.p`

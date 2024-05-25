@@ -1,11 +1,20 @@
 import styled from 'styled-components';
 import DetailNoticeList from '../DetailNoticeList';
 import Pagination from '../layouts/Pagination';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  QueryDocumentSnapshot,
+  DocumentData,
+} from 'firebase/firestore';
 import { db } from '../../firebase';
 
-const FreeNotice = () => {
+const NoticeBoard = () => {
+  const { cate } = useParams<{ cate?: string }>();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [pageDocs, setPageDocs] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
@@ -13,12 +22,20 @@ const FreeNotice = () => {
 
   useEffect(() => {
     const fetchTotalItems = async () => {
-      const snapshot = await getDocs(collection(db, 'notice'));
+      let q;
+      if (cate) {
+        // 카테고리가 있을 경우 해당 카테고리의 게시글만 가져옵니다.
+        q = query(collection(db, 'notice'), where('category', '==', cate));
+      } else {
+        // 카테고리가 없을 경우 모든 게시글을 가져옵니다.
+        q = query(collection(db, 'notice'), where('category', '==', 'free'));
+      }
+      const snapshot = await getDocs(q);
       setTotalItems(snapshot.size);
     };
 
     fetchTotalItems();
-  }, []);
+  }, [cate]);
 
   // 기준점을 업데이트하는 함수
   const updatePageDocs = useCallback(
@@ -36,7 +53,7 @@ const FreeNotice = () => {
     <Wrapper>
       <div className="overflow-x-auto">
         <DetailNoticeList
-          title={''}
+          title={cate || ''}
           itemsPerPage={itemsPerPage}
           currentPage={currentPage}
           updatePageDocs={updatePageDocs}
@@ -53,7 +70,7 @@ const FreeNotice = () => {
   );
 };
 
-export default FreeNotice;
+export default NoticeBoard;
 
 const Wrapper = styled.div`
   width: 100%;

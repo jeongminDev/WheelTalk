@@ -16,14 +16,16 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
   const [brand, setBrand] = useState(''); // 카테고리 선택 후 브랜드 상태
   const [title, setTitle] = useState(''); // 제목 상태
   const [content, setContent] = useState(''); // 본문 상태
-  const [image, setImage] = useState<File | null>(null); // 이미지 상태
+  const [images, setImages] = useState<File[]>([]); // 이미지 상태
 
   const handleCloseBtn = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const ok = confirm('작성중인 내용이 사라집니다. 정말 취소하시겠습니까?');
-    if (ok) {
-      onClose(event);
+    if (title || content) {
+      const ok = confirm('작성중인 내용이 사라집니다. 정말 취소하시겠습니까?');
+      if (ok) {
+        return onClose(event);
+      }
     }
-    return;
+    return onClose(event);
   };
 
   const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -31,11 +33,16 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
   };
 
   const handleBrandChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (category === 'free') {
-      setBrand('');
-      return;
+    const selectedBrand = event.target.value;
+
+    // 선택된 브랜드가 없을 경우, 카테고리를 'free'로 설정
+    if (!selectedBrand) {
+      setCategory('free');
+      setBrand(''); // 브랜드 상태도 초기화
+    } else {
+      // 선택된 브랜드가 있을 경우, 해당 브랜드로 상태 업데이트
+      setBrand(selectedBrand);
     }
-    setBrand(event.target.value);
   };
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,11 +56,15 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
 
-    if (files && files.length === 1) {
-      if (files[0].size > 1000000) {
-        return alert('이미지 용량이 너무 큽니다.');
+    if (files && files.length > 0) {
+      const selectedFiles = Array.from(files);
+      const filteredFiles = selectedFiles.filter((file) => file.size <= 1000000);
+
+      if (filteredFiles.length !== selectedFiles.length) {
+        alert('일부 이미지 용량이 너무 큽니다.');
       }
-      setImage(files[0]);
+
+      setImages(filteredFiles);
     }
   };
 
@@ -65,30 +76,38 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
 
     try {
       setLoading(true);
+
+      // 브랜드가 선택되지 않았을 때 카테고리를 자유게시판으로 설정
+      const finalCategory = brand === '' ? 'free' : category;
+
       const doc = await addDoc(collection(db, 'notice'), {
         content,
         createdAt: Date.now(),
         username: user.displayName || 'Unknown',
         userId: user.uid,
         title,
-        category,
+        category: finalCategory,
         brand,
+        photos: [],
       });
 
-      if (image) {
-        const locationRef = ref(storage, `notice/${user.uid}/${doc.id}`);
+      const uploadedImageUrls = [];
+      for (const image of images) {
+        const locationRef = ref(storage, `notice/${user.uid}/${doc.id}/${image.name}`);
         const result = await uploadBytes(locationRef, image);
         const url = await getDownloadURL(result.ref);
-        await updateDoc(doc, {
-          photo: url,
-        });
+        uploadedImageUrls.push(url);
       }
+
+      await updateDoc(doc, {
+        photos: uploadedImageUrls,
+      });
 
       setCategory('free');
       setBrand('All');
       setTitle('');
       setContent('');
-      setImage(null);
+      setImages([]);
     } catch (e) {
       console.log(e);
     } finally {
@@ -114,6 +133,11 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
 
           <Label>
             카테고리 선택
+            {category === 'category' ? (
+              <span className="font-extralight text-xs opacity-50">
+                ※ 카테고리를 선택하지 않으면 자유게시판에 자동으로 저장됩니다.
+              </span>
+            ) : null}
             <div className="select_wrap">
               <Select value={category} onChange={handleCategoryChange}>
                 <option value={'free'}>자유게시판</option>
@@ -121,9 +145,7 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
               </Select>
               {category === 'category' ? (
                 <Select value={brand} onChange={handleBrandChange}>
-                  <option value={'All'} disabled>
-                    --선택해주세요--
-                  </option>
+                  <option value={''}>--선택해주세요--</option>
                   {Object.entries(Category).map(([key, name]) => (
                     <option key={key} value={name}>
                       {name}
@@ -143,8 +165,8 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
           </Label>
           <Label className="file">
             이미지 첨부
-            {image ? (
-              <strong>이미지가 등록되었습니다.</strong>
+            {images.length > 0 ? (
+              <strong>{images.length}개의 이미지가 등록되었습니다.</strong>
             ) : (
               <svg
                 fill="none"
@@ -161,7 +183,7 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
                 />
               </svg>
             )}
-            <Input type="file" accept="image/*" hidden onChange={handleImageChange} />
+            <Input type="file" accept="image/*" hidden multiple onChange={handleImageChange} />
           </Label>
           <ButtonContainer theme={theme}>
             <Button type="submit">{isLoading ? '등록중...' : '등록'}</Button>

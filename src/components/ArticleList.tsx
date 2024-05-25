@@ -13,7 +13,7 @@ interface ArticleListProps {
 
 export interface INotice {
   id: string;
-  photo?: string;
+  photos: string[];
   content: string;
   username: string;
   userId: string;
@@ -38,14 +38,14 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
 
       unsubscribe = await onSnapshot(noticesQuery, (snapshot) => {
         const notices = snapshot.docs.map((doc) => {
-          const { content, createdAt, userId, username, photo, category, brand, title } =
+          const { content, createdAt, userId, username, photos, category, brand, title } =
             doc.data();
           return {
             content,
             createdAt,
             userId,
             username,
-            photo,
+            photos,
             id: doc.id,
             title,
             category,

@@ -10,9 +10,8 @@ import { useEffect, useState } from 'react';
 import LoadingScreen from './components/layouts/LoadingScreen';
 import { auth } from './firebase';
 import Footer from './components/layouts/Footer';
-import FreeNotice from './components/views/FreeNotice';
-import CategoryNotice from './components/views/CategoryNotice';
 import Notice from './components/views/Notice';
+import NoticeBoard from './components/views/NoticeBoard';
 
 const router = createBrowserRouter([
   {
@@ -29,11 +28,11 @@ const router = createBrowserRouter([
       },
       {
         path: '/:free',
-        element: <FreeNotice />,
+        element: <NoticeBoard />,
       },
       {
         path: '/category/:cate',
-        element: <CategoryNotice />,
+        element: <NoticeBoard />,
       },
       {
         path: '/notice/:id',

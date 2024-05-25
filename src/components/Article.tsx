@@ -9,7 +9,7 @@ interface ArticleProps {
 
 const Article = ({
   id,
-  photo,
+  photos,
   content,
   username,
   userId,
