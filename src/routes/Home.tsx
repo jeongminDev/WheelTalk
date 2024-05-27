@@ -12,14 +12,14 @@ const Home = () => {
       <SectionWrapper>
         <MainSection>
           <SectionLeft>
-            <SearchBar />
+            <SearchBar position="" />
             <ArticleList cateTitle={'NEW'} noticeLimit={10} />
           </SectionLeft>
           <PopularCharts />
         </MainSection>
         <SubSection>
           {Object.entries(Category).map(([key, name]) => (
-            <ArticleList key={key} cateTitle={name} noticeLimit={5} />
+            <ArticleList key={key} cateTitle={name} noticeLimit={15} />
           ))}
         </SubSection>
       </SectionWrapper>

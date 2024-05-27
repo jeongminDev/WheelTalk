@@ -12,6 +12,8 @@ import {
   addDoc,
   orderBy,
   deleteDoc,
+  updateDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { auth, db, storage } from '../../firebase';
 import { deleteObject, ref } from 'firebase/storage';
@@ -33,6 +35,7 @@ const Notice = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [reply, setReply] = useState('');
   const [imgModal, setImgModal] = useState('');
+  const [likes, setLikes] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,14 +58,24 @@ const Notice = () => {
           category: data.category,
           brand: data.brand,
           photos: data.photos || [],
+          likes: data.likes,
         });
+
+        // Check if the current user has liked this article
+        if (user) {
+          const likeDocRef = doc(db, `notice/${id}/likes`, user.uid);
+          const likeDocSnap = await getDoc(likeDocRef);
+          if (likeDocSnap.exists()) {
+            setLikes(true);
+          }
+        }
       } else {
         console.log('No such document!');
       }
     };
 
     fetchNotice();
-  }, [id]);
+  }, [id, user]);
 
   const handleReply = (event: React.ChangeEvent<HTMLInputElement>) => {
     setReply(event.target.value);
@@ -164,6 +177,45 @@ const Notice = () => {
     setImgModal('');
   };
 
+  const handleLikes = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    if (!article || !user) return;
+
+    try {
+      const docRef = doc(db, 'notice', article.id);
+      const likeDocRef = doc(db, `notice/${article.id}/likes`, user.uid);
+
+      if (likes) {
+        // 좋아요 취소
+        await deleteDoc(likeDocRef);
+        await updateDoc(docRef, {
+          likes: article.likes - 1, // 좋아요 수 감소
+        });
+
+        setArticle((prevArticle) =>
+          prevArticle ? { ...prevArticle, likes: prevArticle.likes - 1 } : prevArticle
+        );
+        setLikes(false);
+      } else {
+        // 좋아요 추가
+        await setDoc(likeDocRef, {
+          userId: user.uid,
+        });
+        await updateDoc(docRef, {
+          likes: article.likes + 1, // 좋아요 수 증가
+        });
+
+        setArticle((prevArticle) =>
+          prevArticle ? { ...prevArticle, likes: prevArticle.likes + 1 } : prevArticle
+        );
+        setLikes(true);
+      }
+    } catch (error) {
+      console.error('Error updating likes: ', error);
+    }
+  };
+
   return (
     <ArticleWrap>
       <ArticleContainer>
@@ -193,15 +245,48 @@ const Notice = () => {
           </ImageGallery>
         )}
         <ArticleContent>{article.content}</ArticleContent>
-        <CommentForm onSubmit={handleCommentSubmit}>
-          <input
-            type="text"
-            value={reply}
-            onChange={handleReply}
-            placeholder="댓글을 입력하세요!"
-          />
-          <button type="submit">{isLoading ? '등록중..' : '댓글 등록'}</button>
-        </CommentForm>
+        <CommentAndLikesWrapper>
+          <CommentForm onSubmit={handleCommentSubmit}>
+            <input
+              type="text"
+              value={reply}
+              onChange={handleReply}
+              placeholder="댓글을 입력하세요!"
+            />
+            <button type="submit">{isLoading ? '등록중..' : '댓글 등록'}</button>
+          </CommentForm>
+          {user && article.userId !== user?.uid ? (
+            <LikesWrap>
+              <button onClick={handleLikes}>
+                {likes ? (
+                  <svg
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 6.342a3.375 3.375 0 0 1 6-2.088 3.375 3.375 0 0 1 5.997 2.26c-.063 2.134-1.618 3.76-2.955 4.784a14.437 14.437 0 0 1-2.676 1.61c-.02.01-.038.017-.05.022l-.014.006-.004.002h-.002a.75.75 0 0 1-.592.001h-.002l-.004-.003-.015-.006a5.528 5.528 0 0 1-.232-.107 14.395 14.395 0 0 1-2.535-1.557C3.564 10.22 1.999 8.558 1.999 6.38L2 6.342Z" />
+                  </svg>
+                ) : (
+                  <svg
+                    fill="none"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                    />
+                  </svg>
+                )}
+              </button>
+            </LikesWrap>
+          ) : null}
+        </CommentAndLikesWrapper>
       </ArticleContainer>
       {comments.length > 0 && (
         <CommentWrap>
@@ -232,7 +317,7 @@ const Notice = () => {
                 <p>{comment.content}</p>
                 {comment.userId === user?.uid && (
                   <>
-                    <button>수정</button>
+                    {/* <button>수정</button> */}
                     <button onClick={() => onDelete(comment.id)}>삭제</button>
                   </>
                 )}
@@ -306,9 +391,24 @@ const ArticleContent = styled.p`
   margin-top: 30px;
 `;
 
-const CommentForm = styled.form`
+const CommentAndLikesWrapper = styled.div`
   display: flex;
   margin-top: 40px;
+  align-items: center;
+  gap: 10px;
+`;
+
+const LikesWrap = styled.div`
+  min-height: 35px;
+  min-width: 35px;
+  button {
+    width: 100%;
+  }
+`;
+
+const CommentForm = styled.form`
+  flex: 1;
+  display: flex;
   input {
     flex: 1;
     margin-right: 10px;
@@ -398,25 +498,17 @@ const NoticeModal = styled.div`
   top: 0;
   bottom: 0;
   margin: auto;
-  width: 90vw;
+  width: 70vw;
+  max-height: 60vw;
   z-index: 21;
   background: #fff;
-
-  &::before {
-    content: '';
-    position: fixed;
-    z-index: 15;
-    background: #00000050;
-    width: 100vw;
-    height: 100vh;
-    left: 0;
-    top: 0;
-  }
+  padding: 30px;
+  box-shadow: 0 3px 4px 0 #666;
 
   img {
     z-index: 22;
     cursor: pointer;
-    max-width: 80%;
-    margin: 0 auto;
+    max-width: 100%;
+    border: solid 2px #ccc;
   }
 `;

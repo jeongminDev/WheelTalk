@@ -3,7 +3,15 @@ import styled from 'styled-components';
 import Article from './Article';
 import { Category } from './constants/category';
 import { useEffect, useState } from 'react';
-import { Unsubscribe, collection, limit, onSnapshot, orderBy, query } from 'firebase/firestore';
+import {
+  Unsubscribe,
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 
 interface ArticleListProps {
@@ -21,6 +29,7 @@ export interface INotice {
   title: string;
   category: string;
   brand: string;
+  likes: number;
 }
 
 const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
@@ -30,15 +39,26 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
     let unsubscribe: Unsubscribe | null = null;
 
     const fetchNotices = async () => {
-      const noticesQuery = query(
-        collection(db, 'notice'),
-        orderBy('createdAt', 'desc'),
-        limit(noticeLimit)
-      );
+      let noticesQuery;
+      if (cateTitle === 'NEW') {
+        noticesQuery = query(
+          collection(db, 'notice'),
+          orderBy('createdAt', 'desc'),
+          limit(noticeLimit)
+        );
+      } else {
+        // 카테고리별로 쿼리를 수정합니다.
+        noticesQuery = query(
+          collection(db, 'notice'),
+          where('brand', '==', cateTitle), // 카테고리 필터를 추가합니다.
+          orderBy('createdAt', 'desc'),
+          limit(noticeLimit)
+        );
+      }
 
       unsubscribe = await onSnapshot(noticesQuery, (snapshot) => {
         const notices = snapshot.docs.map((doc) => {
-          const { content, createdAt, userId, username, photos, category, brand, title } =
+          const { content, createdAt, userId, username, photos, category, brand, title, likes } =
             doc.data();
           return {
             content,
@@ -50,6 +70,7 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
             title,
             category,
             brand,
+            likes,
           };
         });
         setNotice(notices);
@@ -59,7 +80,7 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
     return () => {
       unsubscribe && unsubscribe();
     };
-  }, [noticeLimit]);
+  }, [cateTitle, noticeLimit]);
 
   // Category 객체에서 title과 일치하는 값을 가진 키 찾기
   const cateEntry = Object.entries(Category).find(([key, name]) => name === cateTitle);

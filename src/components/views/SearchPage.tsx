@@ -18,7 +18,7 @@ const SearchPage = () => {
 
       unsubscribe = await onSnapshot(articlesQuery, (snapshot) => {
         const articles = snapshot.docs.map((doc) => {
-          const { content, createdAt, userId, username, photos, category, brand, title } =
+          const { content, createdAt, userId, username, photos, category, brand, title, likes } =
             doc.data();
           return {
             content,
@@ -30,6 +30,7 @@ const SearchPage = () => {
             title,
             category,
             brand,
+            likes,
           };
         });
         setArticle(articles);

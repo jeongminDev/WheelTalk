@@ -7,18 +7,7 @@ interface ArticleProps {
   index: number;
 }
 
-const Article = ({
-  id,
-  photos,
-  content,
-  username,
-  userId,
-  createdAt,
-  title,
-  category,
-  brand,
-  index,
-}: ArticleProps & INotice) => {
+const Article = ({ id, createdAt, title, index }: ArticleProps & INotice) => {
   return (
     <ArticleWrap>
       <Link to={`/notice/${id}`}>

@@ -37,8 +37,8 @@ export const Category: { [key: string]: string } = {
   hyundai: 'HYUNDAI', // 현대
   kia: 'KIA', // 기아
   genesis: 'GENESIS', // 제네시스
-  kgmobility: 'KG 모빌리티', // 구 쌍용
-  renault: '르노코리아', // 구 르노삼성
+  kgmobility: 'KG mobility', // 구 쌍용
+  renault: 'Renault', // 구 르노삼성
   benz: 'Benz',
   audi: 'Audi', // 아우디
   bmw: 'BMW',

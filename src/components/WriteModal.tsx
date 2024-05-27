@@ -89,6 +89,7 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
         category: finalCategory,
         brand,
         photos: [],
+        likes: 0,
       });
 
       const uploadedImageUrls = [];
