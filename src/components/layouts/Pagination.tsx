@@ -12,8 +12,6 @@ const Pagination = ({ currentPage, setCurrentPage, totalItems, itemsPerPage }: P
     setCurrentPage(pageNumber);
   };
 
-  console.log(totalPages);
-
   return (
     <div className="join" style={{ justifyContent: 'center' }}>
       {Array.from({ length: totalPages }, (_, index) => (

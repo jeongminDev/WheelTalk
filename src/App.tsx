@@ -12,6 +12,7 @@ import { auth } from './firebase';
 import Footer from './components/layouts/Footer';
 import Notice from './components/views/Notice';
 import NoticeBoard from './components/views/NoticeBoard';
+import SearchPage from './components/views/SearchPage';
 
 const router = createBrowserRouter([
   {
@@ -27,7 +28,7 @@ const router = createBrowserRouter([
         element: <List />,
       },
       {
-        path: '/:free',
+        path: '/free',
         element: <NoticeBoard />,
       },
       {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: '/notice/:id',
         element: <Notice />,
+      },
+      {
+        path: '/search/:value',
+        element: <SearchPage />,
       },
     ],
   },

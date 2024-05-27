@@ -19,7 +19,7 @@ import { INotice } from './ArticleList';
 interface DetailNoticeListProps {
   title: string;
   itemsPerPage: number;
-  currentPage: number; // 현재 페이지
+  currentPage: number;
   updatePageDocs: (pageNumber: number, doc: QueryDocumentSnapshot<DocumentData>) => void; // 기준점 업데이트 함수
   pageDocs: QueryDocumentSnapshot<DocumentData>[]; // 각 페이지의 기준점 문서 배열
 }
@@ -32,7 +32,7 @@ const DetailNoticeList = ({
   pageDocs,
 }: DetailNoticeListProps) => {
   const matchedCategory = Category[title];
-  const [notices, setNotice] = useState<INotice[]>([]);
+  const [notices, setNotices] = useState<INotice[]>([]);
   const [hasMore, setHasMore] = useState(true); // 추가: 문서가 더 있는지 여부를 추적
 
   useEffect(() => {
@@ -74,7 +74,7 @@ const DetailNoticeList = ({
           };
         });
 
-        setNotice(newNotices);
+        setNotices(newNotices);
         if (snapshot.docs.length > 0) {
           updatePageDocs(currentPage, snapshot.docs[snapshot.docs.length - 1]);
         }

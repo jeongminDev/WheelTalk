@@ -6,6 +6,7 @@ import logoWhiteImg from '../../assets/images/logo_W.png';
 import { useEffect, useState, useRef } from 'react';
 import WriteModal from '../WriteModal';
 import { Category } from '../constants/category';
+import SearchBar from '../SearchBar';
 
 const Nav = () => {
   const user = auth.currentUser;
@@ -117,6 +118,8 @@ const Nav = () => {
           </DropdownMenu>
         </MainMenu>
 
+        <SearchBar position={'nav'} />
+
         <UtilMenu>
           <label className="flex cursor-pointer gap-2" onClick={clickThemeChange}>
             <svg
@@ -184,7 +187,7 @@ export default Nav;
 
 const Wrapper = styled.div`
   display: grid;
-  grid-template-columns: 1fr 4fr 2fr;
+  grid-template-columns: 1fr 2fr 2fr 2fr;
   width: 100%;
   max-width: 1200px;
   justify-content: space-between;

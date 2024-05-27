@@ -40,7 +40,7 @@ const MainSection = styled.section`
   display: flex;
   justify-content: space-between;
 
-  margin-bottom: 50px;
+  margin: 30px auto 50px;
 `;
 
 const SectionLeft = styled.div`

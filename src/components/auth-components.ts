@@ -66,3 +66,17 @@ export const Switcher = styled.span`
     }
   }
 `;
+
+export const DeleteButton = styled.span`
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: #666;
+    color: #fff;
+  }
+`;

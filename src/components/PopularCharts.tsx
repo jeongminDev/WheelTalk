@@ -38,7 +38,6 @@ export default PopularCharts;
 const Wrapper = styled.div`
   width: 100%;
   max-width: 350px;
-  margin-top: 30px;
   border-radius: 5px;
   height: 400px;
   border: solid 1px #ddd;

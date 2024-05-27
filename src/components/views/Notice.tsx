@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import formatDate from '../helpers/helpers';
 import { INotice } from '../ArticleList';
@@ -13,7 +13,9 @@ import {
   orderBy,
   deleteDoc,
 } from 'firebase/firestore';
-import { auth, db } from '../../firebase';
+import { auth, db, storage } from '../../firebase';
+import { deleteObject, ref } from 'firebase/storage';
+import { DeleteButton } from '../auth-components';
 
 interface Comment {
   id: string;
@@ -30,6 +32,8 @@ const Notice = () => {
   const [article, setArticle] = useState<INotice | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [reply, setReply] = useState('');
+  const [imgModal, setImgModal] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNotice = async () => {
@@ -81,7 +85,7 @@ const Notice = () => {
     try {
       setLoading(true);
       await addDoc(collection(db, `notice/${id}/comments`), {
-        username: user.displayName || user.email, // 사용자의 이름 또는 이메일을 사용합니다.
+        username: user.displayName || 'Unknown', // 사용자의 이름 또는 이메일을 사용합니다.
         content: reply,
         createdAt: Date.now(),
         userId: user.uid,
@@ -117,6 +121,28 @@ const Notice = () => {
     return <div>로딩중...</div>;
   }
 
+  const onArticleDelete = async () => {
+    const ok = confirm('이 게시글을 삭제하시겠습니까?');
+
+    if (!ok || user?.uid !== article?.userId || !id) return;
+
+    try {
+      await deleteDoc(doc(db, 'notice', id));
+
+      // 게시글에 포함된 사진 삭제
+      if (article.photos && article.photos.length > 0) {
+        for (const photoUrl of article.photos) {
+          const photoRef = ref(storage, photoUrl);
+          await deleteObject(photoRef);
+        }
+      }
+
+      navigate('/');
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const onDelete = async (commentId: string) => {
     const ok = confirm('정말 이 댓글을 삭제하시겠습니까?');
 
@@ -130,11 +156,25 @@ const Notice = () => {
     }
   };
 
+  const handleOpenImage = (src: string) => {
+    setImgModal(src);
+  };
+
+  const handleCloseImages = () => {
+    setImgModal('');
+  };
+
   return (
     <ArticleWrap>
       <ArticleContainer>
         <ArticleTitleMeta>
           <h1>{article.title}</h1>
+          {article.userId === user?.uid && (
+            <>
+              {/* <button>수정</button> */}
+              <DeleteButton onClick={onArticleDelete}>삭제</DeleteButton>
+            </>
+          )}
           <p>
             작성자: {article.username} | 작성일: {formatDate(article.createdAt)}
           </p>
@@ -143,7 +183,12 @@ const Notice = () => {
         {article.photos.length > 0 && (
           <ImageGallery>
             {article.photos.map((src, index) => (
-              <ArticleImage key={index} src={src} alt={`게시글 이미지 ${index + 1}`} />
+              <ArticleImage
+                onClick={() => handleOpenImage(src)}
+                key={index}
+                src={src}
+                alt={`게시글 이미지 ${index + 1}`}
+              />
             ))}
           </ImageGallery>
         )}
@@ -196,6 +241,11 @@ const Notice = () => {
           ))}
         </CommentWrap>
       )}
+      {imgModal && (
+        <NoticeModal className="notice_modal" onClick={handleCloseImages}>
+          <img src={imgModal} alt="게시물 이미지" />
+        </NoticeModal>
+      )}
     </ArticleWrap>
   );
 };
@@ -224,10 +274,12 @@ const ArticleTitleMeta = styled.div`
   align-items: center;
   border-bottom: solid 1px #ddd;
   padding-bottom: 20px;
+  gap: 15px;
 
   h1 {
     font-size: 24px;
     font-weight: 400;
+    flex: 1;
   }
 
   p {
@@ -246,6 +298,7 @@ const ImageGallery = styled.div`
 const ArticleImage = styled.img`
   display: block;
   max-width: 40%;
+  cursor: pointer;
 `;
 
 const ArticleContent = styled.p`
@@ -333,5 +386,37 @@ const CommentItem = styled.div`
       background: #666;
       color: #fff;
     }
+  }
+`;
+
+const NoticeModal = styled.div`
+  display: flex;
+  align-items: center;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  width: 90vw;
+  z-index: 21;
+  background: #fff;
+
+  &::before {
+    content: '';
+    position: fixed;
+    z-index: 15;
+    background: #00000050;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+  }
+
+  img {
+    z-index: 22;
+    cursor: pointer;
+    max-width: 80%;
+    margin: 0 auto;
   }
 `;
