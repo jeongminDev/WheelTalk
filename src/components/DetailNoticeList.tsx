@@ -59,7 +59,7 @@ const DetailNoticeList = ({
 
       unsubscribe = onSnapshot(noticesQuery, (snapshot) => {
         const newNotices = snapshot.docs.map((doc) => {
-          const { content, createdAt, userId, username, photos, category, brand, title } =
+          const { content, createdAt, userId, username, photos, category, brand, title, likes } =
             doc.data();
           return {
             content,
@@ -71,6 +71,7 @@ const DetailNoticeList = ({
             title,
             category,
             brand,
+            likes,
           };
         });
 

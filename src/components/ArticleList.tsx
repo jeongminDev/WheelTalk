@@ -102,14 +102,14 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
         {cateTitle === 'NEW' ? (
           notices.length > 0 ? (
             notices.map((notice, index) => (
-              <Article key={notice.id} {...notice} index={index + 1} />
+              <Article currentPage={0} key={notice.id} {...notice} index={index + 1} />
             ))
           ) : (
             <div className="p-5">이야기를 기다리는 중...</div>
           )
         ) : filteredNotice.length > 0 ? (
           filteredNotice.map((notice, index) => (
-            <Article key={notice.id} {...notice} index={index + 1} />
+            <Article currentPage={0} key={notice.id} {...notice} index={index + 1} />
           ))
         ) : (
           <div className="p-5">이야기를 기다리는 중...</div>

@@ -3,7 +3,6 @@ import Nav from './components/layouts/Nav';
 import Home from './routes/Home';
 import Login from './routes/Login';
 import CreateAccount from './routes/CreateAccount';
-import List from './components/List';
 import styled, { createGlobalStyle } from 'styled-components';
 import reset from 'styled-reset';
 import { useEffect, useState } from 'react';
@@ -22,10 +21,6 @@ const router = createBrowserRouter([
       {
         path: '',
         element: <Home />,
-      },
-      {
-        path: 'list',
-        element: <List />,
       },
       {
         path: '/free',

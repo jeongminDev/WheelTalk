@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import formatDate from '../helpers/helpers';
 import { INotice } from '../ArticleList';
@@ -15,11 +15,10 @@ import {
   updateDoc,
   setDoc,
 } from 'firebase/firestore';
-import { auth, db, storage } from '../../firebase';
-import { deleteObject, ref } from 'firebase/storage';
-import { DeleteButton } from '../auth-components';
+import { auth, db } from '../../firebase';
+import ArticleContent from '../ArticleContent';
 
-interface Comment {
+export interface Comment {
   id: string;
   username: string;
   content: string;
@@ -36,7 +35,6 @@ const Notice = () => {
   const [reply, setReply] = useState('');
   const [imgModal, setImgModal] = useState('');
   const [likes, setLikes] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNotice = async () => {
@@ -98,13 +96,13 @@ const Notice = () => {
     try {
       setLoading(true);
       await addDoc(collection(db, `notice/${id}/comments`), {
-        username: user.displayName || 'Unknown', // 사용자의 이름 또는 이메일을 사용합니다.
+        username: user.displayName || 'Unknown',
         content: reply,
         createdAt: Date.now(),
         userId: user.uid,
       });
 
-      setReply(''); // 댓글을 추가한 후 입력 필드를 초기화합니다.
+      setReply('');
     } catch (e) {
       console.log(e);
     } finally {
@@ -133,28 +131,6 @@ const Notice = () => {
   if (!article) {
     return <div>로딩중...</div>;
   }
-
-  const onArticleDelete = async () => {
-    const ok = confirm('이 게시글을 삭제하시겠습니까?');
-
-    if (!ok || user?.uid !== article?.userId || !id) return;
-
-    try {
-      await deleteDoc(doc(db, 'notice', id));
-
-      // 게시글에 포함된 사진 삭제
-      if (article.photos && article.photos.length > 0) {
-        for (const photoUrl of article.photos) {
-          const photoRef = ref(storage, photoUrl);
-          await deleteObject(photoRef);
-        }
-      }
-
-      navigate('/');
-    } catch (e) {
-      console.log(e);
-    }
-  };
 
   const onDelete = async (commentId: string) => {
     const ok = confirm('정말 이 댓글을 삭제하시겠습니까?');
@@ -219,32 +195,8 @@ const Notice = () => {
   return (
     <ArticleWrap>
       <ArticleContainer>
-        <ArticleTitleMeta>
-          <h1>{article.title}</h1>
-          {article.userId === user?.uid && (
-            <>
-              {/* <button>수정</button> */}
-              <DeleteButton onClick={onArticleDelete}>삭제</DeleteButton>
-            </>
-          )}
-          <p>
-            작성자: {article.username} | 작성일: {formatDate(article.createdAt)}
-          </p>
-        </ArticleTitleMeta>
+        <ArticleContent article={article} handleOpenImage={handleOpenImage} />
 
-        {article.photos.length > 0 && (
-          <ImageGallery>
-            {article.photos.map((src, index) => (
-              <ArticleImage
-                onClick={() => handleOpenImage(src)}
-                key={index}
-                src={src}
-                alt={`게시글 이미지 ${index + 1}`}
-              />
-            ))}
-          </ImageGallery>
-        )}
-        <ArticleContent>{article.content}</ArticleContent>
         <CommentAndLikesWrapper>
           <CommentForm onSubmit={handleCommentSubmit}>
             <input
@@ -349,46 +301,6 @@ const ArticleContainer = styled.div`
   padding: 30px;
   border: 1px solid #ddd;
   border-radius: 8px;
-`;
-
-const ArticleTitleMeta = styled.div`
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  align-items: center;
-  border-bottom: solid 1px #ddd;
-  padding-bottom: 20px;
-  gap: 15px;
-
-  h1 {
-    font-size: 24px;
-    font-weight: 400;
-    flex: 1;
-  }
-
-  p {
-    font-size: 14px;
-    color: #bbb;
-  }
-`;
-
-const ImageGallery = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-top: 30px;
-  gap: 20px;
-`;
-
-const ArticleImage = styled.img`
-  display: block;
-  max-width: 40%;
-  cursor: pointer;
-`;
-
-const ArticleContent = styled.p`
-  white-space: pre-line;
-  margin-top: 30px;
 `;
 
 const CommentAndLikesWrapper = styled.div`

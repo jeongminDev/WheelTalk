@@ -1,8 +1,7 @@
 import styled from 'styled-components';
-import DetailNoticeList from '../DetailNoticeList';
 import Pagination from '../layouts/Pagination';
 import { useParams } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import {
   collection,
   getDocs,
@@ -10,26 +9,42 @@ import {
   where,
   QueryDocumentSnapshot,
   DocumentData,
+  onSnapshot,
+  orderBy,
+  limit,
+  startAfter,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { INotice } from '../ArticleList';
+import { Category } from '../constants/category';
+import Article from '../Article';
 
 const NoticeBoard = () => {
   const { cate } = useParams<{ cate?: string }>();
+  const [notices, setNotices] = useState<INotice[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [pageDocs, setPageDocs] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
-  const itemsPerPage = 17;
+  const itemsPerPage = 15;
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     const fetchTotalItems = async () => {
       let q;
       if (cate) {
-        // 카테고리가 있을 경우 해당 카테고리의 게시글만 가져옵니다.
-        q = query(collection(db, 'notice'), where('category', '==', cate));
+        q = query(
+          collection(db, 'notice'),
+          where('brand', '==', Category[cate]),
+          orderBy('createdAt', 'desc')
+        );
       } else {
-        // 카테고리가 없을 경우 모든 게시글을 가져옵니다.
-        q = query(collection(db, 'notice'), where('category', '==', 'free'));
+        q = query(
+          collection(db, 'notice'),
+          where('category', '==', 'free'),
+          orderBy('createdAt', 'desc')
+        );
       }
+
       const snapshot = await getDocs(q);
       setTotalItems(snapshot.size);
     };
@@ -37,28 +52,86 @@ const NoticeBoard = () => {
     fetchTotalItems();
   }, [cate]);
 
-  // 기준점을 업데이트하는 함수
-  const updatePageDocs = useCallback(
-    (pageNumber: number, doc: QueryDocumentSnapshot<DocumentData>) => {
-      setPageDocs((prevDocs) => {
-        const newDocs = [...prevDocs];
-        newDocs[pageNumber - 1] = doc;
-        return newDocs;
+  useEffect(() => {
+    const fetchNotices = async () => {
+      let noticesQuery = query(
+        collection(db, 'notice'),
+        orderBy('createdAt', 'desc'),
+        limit(itemsPerPage)
+      );
+
+      if (cate) {
+        noticesQuery = query(
+          collection(db, 'notice'),
+          where('brand', '==', Category[cate]),
+          orderBy('createdAt', 'desc'),
+          limit(itemsPerPage)
+        );
+      } else {
+        noticesQuery = query(
+          collection(db, 'notice'),
+          where('category', '==', 'free'),
+          orderBy('createdAt', 'desc'),
+          limit(itemsPerPage)
+        );
+      }
+
+      if (currentPage > 1 && pageDocs[currentPage - 2]) {
+        noticesQuery = query(noticesQuery, startAfter(pageDocs[currentPage - 2]));
+      }
+
+      onSnapshot(noticesQuery, (snapshot) => {
+        const newNotices = snapshot.docs.map((doc) => {
+          const { content, createdAt, userId, username, photos, category, brand, title, likes } =
+            doc.data();
+          return {
+            content,
+            createdAt,
+            userId,
+            username,
+            photos,
+            id: doc.id,
+            title,
+            category,
+            brand,
+            likes,
+          };
+        });
+
+        setNotices(newNotices);
+
+        if (snapshot.docs.length > 0) {
+          setPageDocs((prevDocs) => {
+            const newDocs = [...prevDocs];
+            newDocs[currentPage - 1] = snapshot.docs[snapshot.docs.length - 1];
+            return newDocs;
+          });
+        }
+        setHasMore(snapshot.docs.length === itemsPerPage);
       });
-    },
-    []
-  );
+    };
+
+    fetchNotices();
+  }, [cate, currentPage, itemsPerPage, pageDocs]);
+
+  useEffect(() => {
+    // 카테고리가 변경될 때 페이지 초기화
+    setCurrentPage(1);
+  }, [cate]);
+
+  const matchedCategory = Category[cate];
 
   return (
     <Wrapper>
       <div className="overflow-x-auto">
-        <DetailNoticeList
-          title={cate || ''}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          updatePageDocs={updatePageDocs}
-          pageDocs={pageDocs}
-        />
+        <TitleSection>
+          <h2>{matchedCategory ? matchedCategory : '자유게시판'}</h2>
+        </TitleSection>
+        <ListWrapper className="article">
+          {notices.map((notice, index) => (
+            <Article key={notice.id} {...notice} currentPage={currentPage} index={index} />
+          ))}
+        </ListWrapper>
       </div>
       <Pagination
         currentPage={currentPage}
@@ -79,4 +152,23 @@ const Wrapper = styled.div`
   flex-direction: column;
   gap: 40px;
   margin: 100px 0 50px;
+`;
+const ListWrapper = styled.div`
+  border: solid 1px #ddd;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 20px;
+  padding: 20px 10px;
+`;
+
+const TitleSection = styled.div`
+  text-align: left;
+  padding-left: 20px;
+  margin-bottom: 30px;
+  h2 {
+    font-weight: bold;
+    font-size: 24px;
+  }
 `;

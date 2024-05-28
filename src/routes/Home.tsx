@@ -19,7 +19,7 @@ const Home = () => {
         </MainSection>
         <SubSection>
           {Object.entries(Category).map(([key, name]) => (
-            <ArticleList key={key} cateTitle={name} noticeLimit={15} />
+            <ArticleList key={key} cateTitle={name} noticeLimit={5} />
           ))}
         </SubSection>
       </SectionWrapper>

@@ -5,14 +5,15 @@ import formatDate from './helpers/helpers';
 
 interface ArticleProps {
   index: number;
+  currentPage: number;
 }
 
-const Article = ({ id, createdAt, title, index }: ArticleProps & INotice) => {
+const Article = ({ id, createdAt, title, index, currentPage }: ArticleProps & INotice) => {
   return (
     <ArticleWrap>
       <Link to={`/notice/${id}`}>
         <ArticleList className="flex">
-          <strong>{index}</strong>
+          <strong>{currentPage ? (currentPage - 1) * 15 + index + 1 : index}</strong>
           <p>{title}</p>
           <span>{formatDate(createdAt)}</span>
         </ArticleList>
