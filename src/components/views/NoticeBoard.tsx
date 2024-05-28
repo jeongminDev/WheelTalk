@@ -26,7 +26,7 @@ const NoticeBoard = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [pageDocs, setPageDocs] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
   const itemsPerPage = 15;
-  const [hasMore, setHasMore] = useState(true);
+  const [, setHasMore] = useState(true);
 
   useEffect(() => {
     const fetchTotalItems = async () => {
@@ -119,13 +119,13 @@ const NoticeBoard = () => {
     setCurrentPage(1);
   }, [cate]);
 
-  const matchedCategory = Category[cate];
+  const matchedCategory = cate && Category[cate] ? Category[cate] : '자유게시판';
 
   return (
     <Wrapper>
       <div className="overflow-x-auto">
         <TitleSection>
-          <h2>{matchedCategory ? matchedCategory : '자유게시판'}</h2>
+          <h2>{matchedCategory}</h2>
         </TitleSection>
         <ListWrapper className="article">
           {notices.map((notice, index) => (

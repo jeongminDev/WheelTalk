@@ -58,7 +58,7 @@ const WriteModal = ({ onClose, theme }: WriteModalProps) => {
 
     if (files && files.length > 0) {
       const selectedFiles = Array.from(files);
-      const filteredFiles = selectedFiles.filter((file) => file.size <= 1000000);
+      const filteredFiles = selectedFiles.filter((file) => file.size <= 2097152);
 
       if (filteredFiles.length !== selectedFiles.length) {
         alert('일부 이미지 용량이 너무 큽니다.');

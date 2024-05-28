@@ -104,10 +104,10 @@ const DetailNoticeList = ({
       <ListWrapper className="article">
         {matchedCategory
           ? filteredCateNotice.map((notice, index) => (
-              <Article key={notice.id} {...notice} index={index + 1} />
+              <Article key={notice.id} {...notice} index={index + 1} currentPage={0} />
             ))
           : filteredFreeNotice.map((notice, index) => (
-              <Article key={notice.id} {...notice} index={index + 1} />
+              <Article key={notice.id} {...notice} index={index + 1} currentPage={0} />
             ))}
       </ListWrapper>
     </Wrapper>

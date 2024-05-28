@@ -83,7 +83,7 @@ const ArticleList = ({ cateTitle, noticeLimit }: ArticleListProps) => {
   }, [cateTitle, noticeLimit]);
 
   // Category 객체에서 title과 일치하는 값을 가진 키 찾기
-  const cateEntry = Object.entries(Category).find(([key, name]) => name === cateTitle);
+  const cateEntry = Object.entries(Category).find(([, name]) => name === cateTitle);
 
   const filteredNotice = notices.filter((notice) => notice.brand === cateTitle);
 
