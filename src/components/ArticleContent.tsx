@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import formatDate from './helpers/helpers';
 import { INotice } from './ArticleList';
 import { auth, db, storage } from '../firebase';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
 import { DeleteButton } from './auth-components';
@@ -45,7 +45,7 @@ const ArticleContent = ({ article, handleOpenImage }: ArticleContentProps) => {
         <h1>{article.title}</h1>
         {article.userId === user?.uid && (
           <>
-            {/* <button>수정</button> */}
+            <Link to={`/notice/${id}/edit`}>수정</Link>
             <DeleteButton onClick={onArticleDelete}>삭제</DeleteButton>
           </>
         )}
@@ -91,6 +91,20 @@ const ArticleTitleMeta = styled.div`
   p {
     font-size: 14px;
     color: #bbb;
+  }
+
+  a {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      background: #666;
+      color: #fff;
+    }
   }
 `;
 

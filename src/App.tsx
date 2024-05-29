@@ -12,6 +12,7 @@ import Footer from './components/layouts/Footer';
 import Notice from './components/views/Notice';
 import NoticeBoard from './components/views/NoticeBoard';
 import SearchPage from './components/views/SearchPage';
+import EditNotice from './components/EditNotice';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: '/notice/:id',
         element: <Notice />,
+      },
+      {
+        path: '/notice/:id/edit',
+        element: <EditNotice />,
       },
       {
         path: '/search/:value',
